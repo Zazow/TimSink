@@ -12,11 +12,27 @@ AMonsterCharacter::AMonsterCharacter()
 	AbilitySystem = CreateDefaultSubobject<UTimeSinkAbilitySystemComponent>(TEXT("AbilitySystem"));
 }
 
+void AMonsterCharacter::PerformPrimaryAttack_Implementation(UTrackableGameplayAbility* Ability)
+{
+	UE_LOG(LogTemp, Warning, TEXT("You are calling the abstract implementation of primary attack."));
+}
+
+void AMonsterCharacter::GetActiveTrackableAbilitiesWithTags(FGameplayTagContainer AbilityTags, TArray<class UTrackableGameplayAbility*>& ActiveAbilities)
+{
+	if (AbilitySystem) {
+		AbilitySystem->GetActiveTrackableAbilitiesWithTag(AbilityTags, ActiveAbilities);
+	}
+}
+
 // Called when the game starts or when spawned
 void AMonsterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	if (HasAuthority()) {
+		if (PrimaryAttackAbility) {
+			AbilitySystem->GiveAbility(FGameplayAbilitySpec(PrimaryAttackAbility.GetDefaultObject(), 1, 0));
+		}
+	}
 }
 
 void AMonsterCharacter::PossessedBy(AController* NewController)

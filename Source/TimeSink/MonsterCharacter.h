@@ -23,6 +23,16 @@ public:
 
 	UAbilitySystemComponent* GetAbilitySystemComponent() const override { return AbilitySystem; };
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Abilities)
+	TSubclassOf<class UGameplayAbility> PrimaryAttackAbility;
+
+	UFUNCTION(BlueprintCallable)
+	void GetActiveTrackableAbilitiesWithTags(FGameplayTagContainer AbilityTags, TArray<class UTrackableGameplayAbility*>& ActiveAbilities);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void PerformPrimaryAttack(UTrackableGameplayAbility* Ability);
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
