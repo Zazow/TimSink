@@ -86,6 +86,7 @@ ATimeSinkCharacter::ATimeSinkCharacter()
 
 void ATimeSinkCharacter::BeginPlay()
 {
+
 	// Call the base class  
 	Super::BeginPlay();
 

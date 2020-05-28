@@ -9,6 +9,7 @@ AMonsterCharacter::AMonsterCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	AbilitySystem = CreateDefaultSubobject<UTimeSinkAbilitySystemComponent>(TEXT("AbilitySystem"));
 }
 
 // Called when the game starts or when spawned
@@ -16,6 +17,13 @@ void AMonsterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+void AMonsterCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	AbilitySystem->InitAbilityActorInfo(this, this);
+	AbilitySystem->RefreshAbilityActorInfo();
 }
 
 // Called every frame

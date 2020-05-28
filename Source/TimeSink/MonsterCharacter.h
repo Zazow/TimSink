@@ -4,10 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "AbilitySystemInterface.h"
+#include "TimeSinkAbilitySystemComponent.h"
 #include "MonsterCharacter.generated.h"
 
 UCLASS()
-class TIMESINK_API AMonsterCharacter : public ACharacter
+class TIMESINK_API AMonsterCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -15,9 +17,16 @@ public:
 	// Sets default values for this character's properties
 	AMonsterCharacter();
 
+	/** Ability System */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Abilities, meta = (AllowPrivateAccess = "true"))
+	class UTimeSinkAbilitySystemComponent* AbilitySystem;
+
+	UAbilitySystemComponent* GetAbilitySystemComponent() const override { return AbilitySystem; };
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void PossessedBy(AController* NewController) override;
 
 public:	
 	// Called every frame
