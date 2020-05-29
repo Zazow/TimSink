@@ -66,7 +66,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 
 	class UCameraComponent* FirstPersonCameraComponent;
-	class UCameraComponent* FirstPersonCameraComponent;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, category = "CharacterAttributes")
 	class UCharacterAttributeSet* CharacterAttributeComponent;
