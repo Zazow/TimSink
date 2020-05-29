@@ -7,7 +7,6 @@
 #include "AbilitySystemInterface.h"
 #include "TimeSinkAbilitySystemComponent.h"
 #include "MainCharacter.generated.h"
-
 class UInputComponent;
 
 //It's very important that this enum is UENUM, because the code will look for UENUM by the given name and crash if the UENUM can't be found. BlueprintType is there so we can use these in blueprints, too. Just in case. Can be neat to define ability packages.
@@ -57,15 +56,9 @@ public:
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 		float BaseLookUpRate;
-
-	/** Camera boom positioning the camera behind the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class USpringArmComponent* CameraBoom;
-
 	/** First person camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* FirstPersonCameraComponent;
-
+		class UCameraComponent* FirstPersonCameraComponent;
 protected:
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);
