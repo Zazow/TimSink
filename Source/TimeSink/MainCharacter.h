@@ -64,8 +64,13 @@ public:
 
 	/** First person camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* FirstPersonCameraComponent;
 
+	class UCameraComponent* FirstPersonCameraComponent;
+	class UCameraComponent* FirstPersonCameraComponent;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, category = "CharacterAttributes")
+	class UCharacterAttributeSet* CharacterAttributeComponent;
+	
 protected:
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);

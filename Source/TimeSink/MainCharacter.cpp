@@ -7,7 +7,7 @@
 #include "Components/InputComponent.h" // maybe not needed
 #include "MotionControllerComponent.h" // maybe not needed
 #include "GameFramework/SpringArmComponent.h"
-
+#include "CharacterAttributeSet.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -35,6 +35,7 @@ AMainCharacter::AMainCharacter()
 
 	AbilitySystem = CreateDefaultSubobject<UTimeSinkAbilitySystemComponent>(TEXT("AbilitySystem"));
 
+	CharacterAttributeComponent = CreateDefaultSubobject<UCharacterAttributeSet>(TEXT("CharacterAttributeComponent"));
 }
 
 // Called when the game starts or when spawned
