@@ -34,6 +34,7 @@ AMainCharacter::AMainCharacter()
 	//FirstPersonCameraComponent->bUsePawnControlRotation = true;
 
 	AbilitySystem = CreateDefaultSubobject<UTimeSinkAbilitySystemComponent>(TEXT("AbilitySystem"));
+	AbilitySystem->ReplicationMode = EGameplayEffectReplicationMode::Mixed;
 
 	CharacterAttributeComponent = CreateDefaultSubobject<UCharacterAttributeSet>(TEXT("CharacterAttributeComponent"));
 }
