@@ -13,5 +13,13 @@ UCLASS()
 class TIMESINK_API AMonsterAIController : public AAIController
 {
 	GENERATED_BODY()
-	
+
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	TSet<TSubclassOf<AActor>> HostileClasses;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	TSet<TSubclassOf<AActor>> FriendlyClasses;
+
+	ETeamAttitude::Type GetTeamAttitudeTowards(const AActor& Other) const override;	
 };
