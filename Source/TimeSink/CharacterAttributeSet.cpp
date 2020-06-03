@@ -3,6 +3,7 @@
 
 #include "CharacterAttributeSet.h"
 
-UCharacterAttributeSet::UCharacterAttributeSet() : Health(100.f)
+UCharacterAttributeSet::UCharacterAttributeSet() 
 {
+	Health = 100.f;
 }
