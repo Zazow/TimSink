@@ -6,10 +6,11 @@
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
 #include "TimeSinkAbilitySystemComponent.h"
+#include "GameplayCueInterface.h"
 #include "MonsterCharacter.generated.h"
 
 UCLASS()
-class TIMESINK_API AMonsterCharacter : public ACharacter, public IAbilitySystemInterface
+class TIMESINK_API AMonsterCharacter : public ACharacter, public IAbilitySystemInterface, public IGameplayCueInterface
 {
 	GENERATED_BODY()
 

@@ -6,7 +6,10 @@
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
 #include "TimeSinkAbilitySystemComponent.h"
+#include "GameplayCueInterface.h"
 #include "MainCharacter.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_TwoParams(FSwordOverlapActorSignature, AMainCharacter, OnSwordOverlapActor, AActor*, OtherActor, const FHitResult&, HitResult);
 
 class UInputComponent;
 
@@ -22,7 +25,7 @@ enum class AbilityInput : uint8
 };
 
 UCLASS()
-class TIMESINK_API AMainCharacter : public ACharacter, public IAbilitySystemInterface
+class TIMESINK_API AMainCharacter : public ACharacter, public IAbilitySystemInterface, public IGameplayCueInterface
 {
 	GENERATED_BODY()
 
@@ -39,10 +42,55 @@ public:
 
 	UAbilitySystemComponent* GetAbilitySystemComponent() const override { return AbilitySystem; };
 
+	// COMBAT
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat)
+	UStaticMeshComponent* RightSword;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat)
+	UStaticMeshComponent* LeftSword;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat)
+	TEnumAsByte<ECollisionChannel> SwordCollisionChannel;
+	
+	UPROPERTY(BlueprintAssignable, Category = Combat)
+	FSwordOverlapActorSignature OnSwordOverlapActor;
+
+	// Tracing variables
+	FTransform RightSwordLastTransform;
+	FTransform LeftSwordLastTransform;
+	FCollisionObjectQueryParams TraceParams;
+	FCollisionQueryParams QueryParams;
+	TSet<AActor*> RightSwordHits;
+	TSet<AActor*> LeftSwordHits;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat)
+	int TracePoints = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat)
+	float TraceLength = 10;
+
+	float SpaceBetweenTracePoints = TraceLength/TracePoints;
+
+	UFUNCTION(BlueprintCallable)
+	void StartDamaging();
+	UFUNCTION(BlueprintCallable)
+	void StopDamaging();
+
+	void TraceSwords(float DeltaTime);
+
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void PossessedBy(AController* NewController) override;
+	virtual void Restart() override;
+
+	// This function is called whenever a property is changed from withing a blueprint.
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+
+	// This array holds function that need to be called every tick.
+	TArray<void(AMainCharacter::*)(float DeltaTime)> ThingsToUpdate;
 
 public:
 	// Called every frame

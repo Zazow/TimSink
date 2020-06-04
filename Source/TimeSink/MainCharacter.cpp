@@ -8,6 +8,7 @@
 #include "MotionControllerComponent.h" // maybe not needed
 #include "GameFramework/SpringArmComponent.h"
 #include "CharacterAttributeSet.h"
+#include "GameplayEffect.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -37,6 +38,65 @@ AMainCharacter::AMainCharacter()
 	AbilitySystem->ReplicationMode = EGameplayEffectReplicationMode::Mixed;
 
 	CharacterAttributeComponent = CreateDefaultSubobject<UCharacterAttributeSet>(TEXT("CharacterAttributeComponent"));
+
+	RightSword = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RightSwordMesh"));
+	RightSword->SetupAttachment(GetMesh(), FName(TEXT("hand_rSocket")));
+	LeftSword = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LeftSwordMesh"));
+	LeftSword->SetupAttachment(GetMesh(), FName(TEXT("hand_lSocket")));
+}
+
+void AMainCharacter::StartDamaging()
+{
+	// todo: see if this should only activate on a locally controlled character or not.
+	ThingsToUpdate.AddUnique(&AMainCharacter::TraceSwords);
+	RightSwordLastTransform = RightSword->GetComponentTransform();
+	LeftSwordLastTransform = LeftSword->GetComponentTransform();
+
+	RightSwordHits.Empty();
+	LeftSwordHits.Empty();
+}
+
+void AMainCharacter::StopDamaging()
+{
+	ThingsToUpdate.Remove(&AMainCharacter::TraceSwords);
+}
+
+void AMainCharacter::TraceSwords(float DeltaTime)
+{
+	auto RightSwordCurrentTransform = RightSword->GetComponentTransform();
+	// Right sword trace:
+	for (int i = 0; i < TracePoints + 1; i++) {
+		// Trace from the last point to this current point
+		auto TraceStart = RightSwordLastTransform.GetLocation() + RightSwordLastTransform.GetRotation().GetUpVector() * i * SpaceBetweenTracePoints;
+		auto TraceEnd = RightSwordCurrentTransform.GetLocation() + RightSwordCurrentTransform.GetRotation().GetUpVector() * i * SpaceBetweenTracePoints;
+		FHitResult OutHit;
+		if (GetWorld()->LineTraceSingleByObjectType(OutHit, TraceStart, TraceEnd, TraceParams, QueryParams)) {
+			auto Other = OutHit.GetActor();
+			if (Other && !RightSwordHits.Contains(Other)) {
+				OnSwordOverlapActor.Broadcast(Other, OutHit);
+				RightSwordHits.Add(Other);
+			}
+		}
+	}
+	RightSwordLastTransform = RightSwordCurrentTransform;
+
+	auto LeftSwordCurrentTransform = LeftSword->GetComponentTransform();
+	// Left sword trace:
+	for (int i = 0; i < TracePoints + 1; i++) {
+		// Trace from the last point to this current point
+		auto TraceStart = LeftSwordLastTransform.GetLocation() + LeftSwordLastTransform.GetRotation().GetUpVector() * i * SpaceBetweenTracePoints;
+		auto TraceEnd = LeftSwordCurrentTransform.GetLocation() + LeftSwordCurrentTransform.GetRotation().GetUpVector() * i * SpaceBetweenTracePoints;
+		FHitResult OutHit;
+		if (GetWorld()->LineTraceSingleByObjectType(OutHit, TraceStart, TraceEnd, TraceParams, QueryParams)) {
+			auto Other = OutHit.GetActor();
+			if (Other && !LeftSwordHits.Contains(Other)) {
+				OnSwordOverlapActor.Broadcast(Other, OutHit);
+				LeftSwordHits.Add(Other);
+			}
+		}
+	}
+	LeftSwordLastTransform = LeftSwordCurrentTransform;
+
 }
 
 // Called when the game starts or when spawned
@@ -48,13 +108,42 @@ void AMainCharacter::BeginPlay()
 			AbilitySystem->GiveAbility(FGameplayAbilitySpec(PrimaryAttackAbility.GetDefaultObject(), 1, 0));
 		}
 	}
+
+	AbilitySystem->InitAbilityActorInfo(this, this);
+
+	QueryParams.AddIgnoredActor(this);
+	QueryParams.TraceTag = FName(TEXT("MainCharacter"));
+
+	SpaceBetweenTracePoints = TraceLength / TracePoints;
+
+	TraceParams = FCollisionObjectQueryParams();
+	TraceParams.AddObjectTypesToQuery(SwordCollisionChannel);
 }
 
 void AMainCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-	AbilitySystem->InitAbilityActorInfo(this, this);
 	AbilitySystem->RefreshAbilityActorInfo();
+
+}
+
+void AMainCharacter::Restart()
+{
+	Super::Restart();
+	AbilitySystem->RefreshAbilityActorInfo();
+}
+
+void AMainCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+	if (PropertyChangedEvent.GetPropertyName() == FName(TEXT("TracePoints")) || PropertyChangedEvent.GetPropertyName() == FName(TEXT("TraceLength"))) {
+		SpaceBetweenTracePoints = TraceLength / TracePoints;
+	}
+	if (PropertyChangedEvent.GetPropertyName() == FName(TEXT("SwordCollisionChannel"))) {
+		// reset params before adding an object type.
+		TraceParams = FCollisionObjectQueryParams();
+		TraceParams.AddObjectTypesToQuery(SwordCollisionChannel);
+	}
 
 }
 
@@ -63,6 +152,10 @@ void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// call functions in ThingsToUpdate
+	for (int i = 0; i < ThingsToUpdate.Num(); i++) {
+		(this->*(ThingsToUpdate[i]))(DeltaTime);
+	}
 }
 
 // Called to bind functionality to input
